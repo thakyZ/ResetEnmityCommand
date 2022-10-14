@@ -22,7 +22,7 @@ namespace ResetEnmityCommand
 {
 	public class Plugin : IDalamudPlugin
 	{
-		[PluginService] public static DalamudPluginInterface DalamudPluginInterface { get; private set; }
+		//[PluginService] public static DalamudPluginInterface DalamudPluginInterface { get; private set; }
 		[PluginService] public static TargetManager TargetManager { get; private set; }
 		//[PluginService] public static ObjectTable ObjectTable { get; private set; }
 		[PluginService] public static GameGui GameGui { get; private set; }
@@ -65,7 +65,7 @@ namespace ResetEnmityCommand
 				if (addonByName != IntPtr.Zero)
 				{
 					var addon = (AddonEnemyList*)addonByName;
-					var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->RaptureAtkModule.AtkModule.AtkArrayDataHolder.NumberArrays[19];
+					var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[19];
 
 					for (var i = 0; i < addon->EnemyCount; i++)
 					{
