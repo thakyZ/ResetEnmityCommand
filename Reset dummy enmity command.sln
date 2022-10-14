@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30621.155
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reset enmity command", "Reset enmity command.csproj", "{D87E9661-AA35-4620-8C6E-D20DB86A172D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reset dummy enmity command", "Reset dummy enmity command.csproj", "{D87E9661-AA35-4620-8C6E-D20DB86A172D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
