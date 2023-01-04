@@ -1,3 +1,3 @@
-# Reset-dummy-enmity-command
+# Dalamud-ResetEnmityCommand
 
-https://github.com/goatcorp/suggestions/issues/322
+<https://github.com/goatcorp/suggestions/issues/322>
