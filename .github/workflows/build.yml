@@ -69,13 +69,17 @@ jobs:
             prop_path: 'AssemblyVersion'
       - run: echo ${{steps.version.outputs.prop}}
 
+      - name: Debug
+        run: |
+          Get-ChildItem ${{ steps.download.outputs.download-path }}
+
       - name: Create release
         uses: softprops/action-gh-release@v0.1.15
         with:
           name: ${{ env.PROJECT_NAME }} ${{steps.version.outputs.prop}}
           tag_name: ${{steps.version.outputs.prop}}
           body: ${{ github.events.commits[0].message }}
-          files: ${{ steps.download.outputs.download-path }}\latest.zip
+          files: ${{ steps.download.outputs.download-path }}\${{env.PROJECT_NAME}}\latest.zip
 
       - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v2.1.1
