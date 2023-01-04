@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v2.2.1
         with:
           name: ${{env.PROJECT_NAME}}
-          path: ${{env.PROJECT_NAME}}/bin/Release/${{env.PROJECT_NAME}}
+          path: ${{ github.event.repository.name }}/bin/Release/${{env.PROJECT_NAME}}
           if-no-files-found: error
 
   release:
