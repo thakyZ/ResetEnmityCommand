@@ -177,27 +177,22 @@ namespace ResetEnmityCommand
           /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
           var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
 
-          PluginLog.Information(addon->EnemyCount.ToString());
           /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.
           for (var i = 0; i < addon->EnemyCount; i++)
           {
             /// Get the enemy object ID from the <see cref="NumArrayData"/> as an <see cref="int"/> array with index at <see cref="i"/> multiplied by 6, then offset by plus 8.
             var enemyObjectId = numArray->IntArray[8 + (i * 6)];
 
-            PluginLog.Information(numArray->IntArray->ToString());
             /// Get the <see cref="BattleChara"/> from the <see cref="enemyObjectId"/> in the instance.
             var enemyChara = CharacterManager.Instance()->LookupBattleCharaByObjectId(enemyObjectId);
             /// If the <see cref="enemyChara"/> is not found or is null, then ignore and continue through the for loop.
             if (enemyChara is null)
             {
-              PluginLog.Information("enemyChara is null");
               continue;
             }
-            PluginLog.Information("enemyChara is not null");
             /// If the <see cref="enemyChara"/> is found and is not null, check if it has the name ID of:
             /// <seealso href="https://xivapi.com/BNpcName/541"/>
             /// and then reset the enmity of that object.
-            PluginLog.Information(enemyChara->Character.NameID.ToString());
             if (enemyChara->Character.NameID == 541)
             {
               ResetEnmity(enemyObjectId);
