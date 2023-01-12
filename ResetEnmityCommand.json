@@ -11,7 +11,7 @@
     "battle",
     "train"
   ],
-  "DalamudApiVersion": 7,
+  "DalamudApiVersion": 8,
   "IconUrl": "https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/ResetEnmityCommand/images/icon.png",
   "Changelog": "Version Bump\nCommented code and added style\nCreate build.yml"
 }
