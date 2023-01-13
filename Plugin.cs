@@ -118,8 +118,42 @@ namespace ResetEnmityCommand
     /// </summary>
     public unsafe Plugin()
     {
+#region Sig Documentation
+      /// As of 6.28 and 6.3 the file offset is: ffxiv_dx11.exe+742D70
+      //FUN_14073a2f0
+      /// void UndefinedFunction_140b105e0 (undefined8 param_1,ushort param_2,undefined param_3,undefined param_4,ushort param_5 )
+      /// {
+      ///   longlong lVar1;
+      ///   undefined auStack_f88 [32];
+      ///   undefined4 auStack_f68 [2];
+      ///   undefined8 uStack_f60;
+      ///   undefined4 uStack_f48;
+      ///   uint uStack_f44;
+      ///   uint uStack_f40;
+      ///   uint uStack_f3c;
+      ///   undefined4 uStack_f38;
+      ///   undefined8 uStack_f30;
+      ///   ulonglong uStack_18;
+      /// 
+      ///   uStack_18 = _DAT_14207e8f0 ^ (ulonglong)auStack_f88;
+      ///   lVar1 = func_0x000140093540(_g_Client::System::Framework::Framework_InstancePointer2);
+      ///   if (lVar1 != 0) {
+      ///     uStack_f38 = 0;
+      ///     auStack_f68[0] = 0xfc;
+      ///     uStack_f60 = 0x30;
+      ///     uStack_f48 = 0x466;
+      ///     uStack_f30 = 0;
+      ///     uStack_f44 = (uint)param_2;
+      ///     uStack_f40 = (uint)CONCAT11(param_3,param_4);
+      ///     uStack_f3c = (uint)param_5;
+      ///     func_0x0001402097f0(lVar1,auStack_f68,0,0);
+      ///   }
+      ///   FUN_1415aff90(uStack_18 ^ (ulonglong)auStack_f88);
+      ///   return;
+      /// }
+#endregion
       /// The signature for the reset enmity at target.
-      /// Ask the Dalamud Discord  or use a Decompiler like IDA if it is out of date.
+      /// Ask the Dalamud Discord or use a Decompiler like IDA if it is out of date.
       var scanText = SigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A");
       /// Adds the memory delegate to execute the function at the pointer.
       ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDele>(scanText);
@@ -139,7 +173,8 @@ namespace ResetEnmityCommand
       void ResetEnmity(int objectId)
       {
         PluginLog.Information($"Resetting enmity {objectId:X}");
-        _ = ExecuteCommand(0x140, objectId, 0, 0, 0);
+        long success = ExecuteCommand(0x140, objectId, 0, 0, 0);
+        PluginLog.Debug($"Reset enmity of {objectId:X} returned: {success}");
       }
 
       /// <summary>
