@@ -173,7 +173,7 @@ namespace ResetEnmityCommand
       void ResetEnmity(int objectId)
       {
         PluginLog.Information($"Resetting enmity {objectId:X}");
-        long success = ExecuteCommand(0x140, objectId, 0, 0, 0);
+        long success = ExecuteCommand(0x13f, objectId, 0, 0, 0);
         PluginLog.Debug($"Reset enmity of {objectId:X} returned: {success}");
       }
 
