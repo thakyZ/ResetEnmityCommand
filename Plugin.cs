@@ -35,7 +35,7 @@ namespace ResetEnmityCommand
     /// <summary>
     /// The Dalamud service's manager to get what the player's target is.
     /// </summary>
-    [PluginService] public static TargetManager TargetManager { get; private set; }
+    [PluginService] public static TargetManager TargetManager { get; private set; } = null!;
 
     /*
     /// <summary>
@@ -47,18 +47,18 @@ namespace ResetEnmityCommand
     /// <summary>
     /// The Dalamud service's interface class to get the game's GUI interface.
     /// </summary>
-    [PluginService] public static GameGui GameGui { get; private set; }
+    [PluginService] public static GameGui GameGui { get; private set; } = null!;
 
     /// <summary>
     /// The Dalamud service's command manager interface.
     /// Used to add the commands to the plugin interface.
     /// </summary>
-    [PluginService] public static CommandManager CommandManager { get; private set; }
+    [PluginService] public static CommandManager CommandManager { get; private set; } = null!;
 
     /// <summary>
     /// The Dalamud service interface to scan the data in the running process to clear enmity.
     /// </summary>
-    [PluginService] public static SigScanner SigScanner { get; private set; }
+    [PluginService] public static SigScanner SigScanner { get; private set; } = null!;
 
     /// <summary>
     /// The Delegate function to execute the target subcommand to reset enmity of the striking dummy.
@@ -69,12 +69,12 @@ namespace ResetEnmityCommand
     /// <param name="a3">Unknown</param>
     /// <param name="a4">Unknown</param>
     /// <returns>Unknown</returns>
-    private delegate long ExecuteCommandDele(int id, int a1, int a2, int a3, int a4);
+    private delegate long ExecuteCommandDelegate(int id, int a1, int a2, int a3, int a4);
 
     /// <summary>
-    /// The variable that implements the <see cref="ExecuteCommandDele"/> function.
+    /// The variable that implements the <see cref="ExecuteCommandDelegate"/> function.
     /// </summary>
-    private ExecuteCommandDele ExecuteCommand;
+    private readonly ExecuteCommandDelegate ExecuteCommand;
 
     /// <summary>
     /// The name of the plugin.
@@ -84,7 +84,7 @@ namespace ResetEnmityCommand
     /// <summary>
     /// Safe disposing measures.
     /// </summary>
-    private bool _IsDisposed = false;
+    private bool _IsDisposed;
 
     /// <summary>
     /// Dispose plugin safely.
@@ -116,8 +116,9 @@ namespace ResetEnmityCommand
     /// <summary>
     /// The plugin constructor class.
     /// </summary>
-    public unsafe Plugin()
+    public unsafe Plugin([RequiredVersion("1.0")]DalamudPluginInterface pluginInterface)
     {
+      pluginInterface.Create<Plugin>();
 #region Sig Documentation
       /// As of 6.28 and 6.3 the file offset is: ffxiv_dx11.exe+742D70
       //FUN_14073a2f0
@@ -134,7 +135,7 @@ namespace ResetEnmityCommand
       ///   undefined4 uStack_f38;
       ///   undefined8 uStack_f30;
       ///   ulonglong uStack_18;
-      /// 
+      ///
       ///   uStack_18 = _DAT_14207e8f0 ^ (ulonglong)auStack_f88;
       ///   lVar1 = func_0x000140093540(_g_Client::System::Framework::Framework_InstancePointer2);
       ///   if (lVar1 != 0) {
@@ -154,84 +155,84 @@ namespace ResetEnmityCommand
 #endregion
       /// The signature for the reset enmity at target.
       /// Ask the Dalamud Discord or use a Decompiler like IDA if it is out of date.
-      var scanText = SigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A");
+      nint scanText = SigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A");
       /// Adds the memory delegate to execute the function at the pointer.
-      ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDele>(scanText);
+      ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDelegate>(scanText);
       /// Logs the execution of the reset striking dummy enmity command to the debug log.
-      PluginLog.Debug($"{nameof(ExecuteCommand)} +{(long)scanText - (long)Process.GetCurrentProcess().MainModule.BaseAddress:X}");
+      PluginLog.Debug($"{nameof(ExecuteCommand)} +{scanText - Process.GetCurrentProcess().MainModule!.BaseAddress:X}");
 
       /// Add the reset enmity command for the targeted striking dummy.
       _ = CommandManager.AddHandler("/resetenmity", new CommandInfo(ResetTarget) { HelpMessage = "Reset target dummy's enmity." });
       /// Add the reset enmity command for all striking dummies.
-      _ =CommandManager.AddHandler("/resetenmityall", new CommandInfo(ResetAll) { HelpMessage = "Reset the enmity of all dummies." });
+      _ = CommandManager.AddHandler("/resetenmityall", new CommandInfo(ResetAll) { HelpMessage = "Reset the enmity of all dummies." });
+    }
 
-      /// <summary>
-      /// The main reset enmity for object function.
-      /// Resets the enmity of the provided object ID and logs it to information.
-      /// </summary>
-      /// <param name="objectId">The object to reset the enmity of.</param>
-      void ResetEnmity(int objectId)
+    /// <summary>
+    /// The main reset enmity for object function.
+    /// Resets the enmity of the provided object ID and logs it to information.
+    /// </summary>
+    /// <param name="objectId">The object to reset the enmity of.</param>
+    private void ResetEnmity(int objectId)
+    {
+      PluginLog.Information($"Resetting enmity {objectId:X}");
+      long success = ExecuteCommand(0x13f, objectId, 0, 0, 0);
+      PluginLog.Debug($"Reset enmity of {objectId:X} returned: {success}");
+    }
+
+    /// <summary>
+    /// The reset enmity of the targeted striking dummy.
+    /// </summary>
+    /// <param name="s">The command executed. (Unused)</param>
+    /// <param name="s1">The parameters. (Unused)</param>
+    private void ResetTarget(string s, string s1)
+    {
+      /// Gets the current target object.
+      var target = TargetManager.Target;
+      /// Checks if the current target is a character with the name ID of:
+      /// <seealso href="https://xivapi.com/BNpcName/541"/>
+      if (target is Character { NameId: 541 })
       {
-        PluginLog.Information($"Resetting enmity {objectId:X}");
-        long success = ExecuteCommand(0x13f, objectId, 0, 0, 0);
-        PluginLog.Debug($"Reset enmity of {objectId:X} returned: {success}");
+        /// Reset the enmity of the target via it's objectId.
+        ResetEnmity((int)target.ObjectId);
       }
+    }
 
-      /// <summary>
-      /// The reset enmity of the targeted striking dummy.
-      /// </summary>
-      /// <param name="s">The command executed. (Unused)</param>
-      /// <param name="s1">The parameters. (Unused)</param>
-      void ResetTarget(string s, string s1)
+    /// <summary>
+    /// The reset enmity of all aggroed striking dummies.
+    /// </summary>
+    /// <param name="s">The command executed. (Unused)</param>
+    /// <param name="s1">The parameters. (Unused)</param>
+    private unsafe void ResetAll(string s, string s1)
+    {
+      /// Get game GUI add-on, EnemyList by name
+      var addonByName = GameGui.GetAddonByName("_EnemyList", 1);
+      /// If the EnemyList add-on was found and isn't <see cref="IntPtr.Zero"/> then continue.
+      if (addonByName != IntPtr.Zero)
       {
-        /// Gets the current target object.
-        var target = TargetManager.Target;
-        /// Checks if the current target is a character with the name ID of:
-        /// <seealso href="https://xivapi.com/BNpcName/541"/>
-        if (target is Character { NameId: 541 })
-        {
-          /// Reset the enmity of the target via it's objectId.
-          ResetEnmity((int)target.ObjectId);
-        }
-      }
+        /// Parse the addonByName to the <see cref="AddonEnemyList"/> class/pointer.
+        var addon = (AddonEnemyList*)addonByName;
+        /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
+        var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
 
-      /// <summary>
-      /// The reset enmity of all aggroed striking dummies.
-      /// </summary>
-      /// <param name="s">The command executed. (Unused)</param>
-      /// <param name="s1">The parameters. (Unused)</param>
-      void ResetAll(string s, string s1)
-      {
-        /// Get game GUI add-on, EnemyList by name
-        var addonByName = GameGui.GetAddonByName("_EnemyList", 1);
-        /// If the EnemyList add-on was found and isn't <see cref="IntPtr.Zero"/> then continue.
-        if (addonByName != IntPtr.Zero)
+        /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.
+        for (var i = 0; i < addon->EnemyCount; i++)
         {
-          /// Parse the addonByName to the <see cref="AddonEnemyList"/> class/pointer.
-          var addon = (AddonEnemyList*)addonByName;
-          /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
-          var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
+          /// Get the enemy object ID from the <see cref="NumArrayData"/> as an <see cref="int"/> array with index at <see cref="i"/> multiplied by 6, then offset by plus 8.
+          var enemyObjectId = numArray->IntArray[8 + (i * 6)];
 
-          /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.
-          for (var i = 0; i < addon->EnemyCount; i++)
+          /// Get the <see cref="BattleChara"/> from the <see cref="enemyObjectId"/> in the instance.
+          var enemyChara = CharacterManager.Instance()->LookupBattleCharaByObjectId(enemyObjectId);
+          /// If the <see cref="enemyChara"/> is not found or is null, then ignore and continue through the for loop.
+          if (enemyChara is null)
           {
-            /// Get the enemy object ID from the <see cref="NumArrayData"/> as an <see cref="int"/> array with index at <see cref="i"/> multiplied by 6, then offset by plus 8.
-            var enemyObjectId = numArray->IntArray[8 + (i * 6)];
-
-            /// Get the <see cref="BattleChara"/> from the <see cref="enemyObjectId"/> in the instance.
-            var enemyChara = CharacterManager.Instance()->LookupBattleCharaByObjectId(enemyObjectId);
-            /// If the <see cref="enemyChara"/> is not found or is null, then ignore and continue through the for loop.
-            if (enemyChara is null)
-            {
-              continue;
-            }
-            /// If the <see cref="enemyChara"/> is found and is not null, check if it has the name ID of:
-            /// <seealso href="https://xivapi.com/BNpcName/541"/>
-            /// and then reset the enmity of that object.
-            if (enemyChara->Character.NameID == 541)
-            {
-              ResetEnmity(enemyObjectId);
-            }
+            continue;
+          }
+          /// If the <see cref="enemyChara"/> is found and is not null, check if it has the name ID of:
+          /// <seealso href="https://xivapi.com/BNpcName/541"/>
+          /// and then reset the enmity of that object.
+          if (enemyChara->Character.NameID == 541)
+          {
+            ResetEnmity(enemyObjectId);
           }
         }
       }

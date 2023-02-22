@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>0.0.1.5</Version>
+    <Version>0.0.1.6</Version>
     <Company></Company>
     <Authors>Neko Boi Nick and akira0245</Authors>
     <Description>Add a reset striking dummy enmity command.</Description>
     <PackageProjectUrl>https://github.com/thakyZ/Dalamud-ResetEnmityCommand</PackageProjectUrl>
     <Copyright></Copyright>
-    <AssemblyTitle>Reset Enmity Command</AssemblyTitle>
+    <Title>Reset Enmity Command</Title>
   </PropertyGroup>
 
   <PropertyGroup>
-    <AssemblyName>$(AssemblyTitle)</AssemblyName>
-    <Title>$(AssemblyTitle)</Title>
-    <Product>$(AssemblyTitle)</Product>
+    <AssemblyName>$(Title.Replace(" ", ""))</AssemblyName>
+    <AssemblyTitle>$(Title)</AssemblyTitle>
+    <Product>$(Title)</Product>
     <PluginVersion>$(Version)</PluginVersion>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
@@ -32,7 +32,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)</OutputPath>
-    <RootNamespace>$(AssemblyTitle.Replace(" ", ""))</RootNamespace>
+    <RootNamespace>$(Title.Replace(" ", ""))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
