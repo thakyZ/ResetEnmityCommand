@@ -1,25 +1,70 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <OutputType>Library</OutputType>
-    <AssemblyVersion>0.0.1.5</AssemblyVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Platforms>x64</Platforms>
+    <Version>0.0.1.5</Version>
+    <Company></Company>
+    <Authors>Neko Boi Nick and akira0245</Authors>
+    <Description>Add a reset striking dummy enmity command.</Description>
+    <PackageProjectUrl>https://github.com/thakyZ/Dalamud-ResetEnmityCommand</PackageProjectUrl>
+    <Copyright></Copyright>
+    <AssemblyTitle>Reset Enmity Command</AssemblyTitle>
   </PropertyGroup>
 
   <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <RootNamespace>ResetEnmityCommand</RootNamespace>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AssemblyName>$(AssemblyTitle)</AssemblyName>
+    <Title>$(AssemblyTitle)</Title>
+    <Product>$(AssemblyTitle)</Product>
+    <PluginVersion>$(Version)</PluginVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Configurations>Release;Debug</Configurations>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)</OutputPath>
+    <RootNamespace>$(AssemblyTitle.Replace(" ", ""))</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsCI)' == 'true'">
+    <Dalamud>$(HOME)/dalamud</Dalamud>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="2.1.10" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>False</Private>
@@ -41,15 +86,12 @@
   </Target>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\thaky\Development\Git\Games\FinalFantasy14\Reset-dummy-enmity-command\.editorconfig" />
+    <Content Include="ResetEnmityCommand.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include="README.md" CopyToOutputDirectory="Never"/>
+    <Content Include=".gitignore" CopyToOutputDirectory="Never"/>
+    <EditorConfigFiles Remove=".editorconfig"/>
+    <None Include=".editorconfig" Link=".editorconfig" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="C:\Users\thaky\Development\Git\Games\FinalFantasy14\Reset-dummy-enmity-command\.editorconfig" />
-  </ItemGroup>
-
-  <!--<Target Name="PackagePlugin" AfterTargets="CleanOutDir" Condition="'$(Configuration)' == 'Release'">
-    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" Exclude="*.pdb;" AssemblyName="$(AssemblyName)" />
-  </Target>-->
-
 </Project>
