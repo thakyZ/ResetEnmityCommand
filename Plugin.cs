@@ -118,7 +118,6 @@ namespace ResetEnmityCommand
     /// </summary>
     public unsafe Plugin([RequiredVersion("1.0")]DalamudPluginInterface pluginInterface)
     {
-      pluginInterface.Create<Plugin>();
 #region Sig Documentation
       /// As of 6.28 and 6.3 the file offset is: ffxiv_dx11.exe+742D70
       //FUN_14073a2f0

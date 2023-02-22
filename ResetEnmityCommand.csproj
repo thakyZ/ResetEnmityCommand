@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>0.0.1.6</Version>
+    <Version>0.0.1.7</Version>
     <Company></Company>
     <Authors>Neko Boi Nick and akira0245</Authors>
     <Description>Add a reset striking dummy enmity command.</Description>
