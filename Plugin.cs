@@ -11,6 +11,9 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
+#if DEBUG
+using Dalamud.Hooking;
+#endif
 using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin;
@@ -111,7 +114,20 @@ namespace ResetEnmityCommand
     {
       Dispose(true);
       GC.SuppressFinalize(this);
+#if DEBUG
+      ExecuteCommandHook.Disable();ExecuteCommandHook.Disable();
+#endif
     }
+
+
+#if DEBUG
+        private static Hook<ExecuteCommandDele> ExecuteCommandHook;
+        private static long ExecuteCommandDetour(uint trigger, int a1, int a2, int a3, int a4)
+        {
+            PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");
+            return ExecuteCommandHook.Original(trigger, a1, a2, a3, a4);
+    }
+#endif
 
     /// <summary>
     /// The plugin constructor class.
@@ -159,13 +175,13 @@ namespace ResetEnmityCommand
       ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDelegate>(scanText);
       /// Logs the execution of the reset striking dummy enmity command to the debug log.
       PluginLog.Debug($"{nameof(ExecuteCommand)} +{scanText - Process.GetCurrentProcess().MainModule!.BaseAddress:X}");
-
       /// Add the reset enmity command for the targeted striking dummy.
       _ = CommandManager.AddHandler("/resetenmity", new CommandInfo(ResetTarget) { HelpMessage = "Reset target dummy's enmity." });
       /// Add the reset enmity command for all striking dummies.
       _ = CommandManager.AddHandler("/resetenmityall", new CommandInfo(ResetAll) { HelpMessage = "Reset the enmity of all dummies." });
     }
-
+#endif
+            
     /// <summary>
     /// The main reset enmity for object function.
     /// Resets the enmity of the provided object ID and logs it to information.
@@ -212,6 +228,9 @@ namespace ResetEnmityCommand
         var addon = (AddonEnemyList*)addonByName;
         /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
         var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
+                    numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()
+        ->AtkModule.AtkArrayDataHolder.NumberArrays[int.Parse(s1.Split()[0])];
+#endif
 
         /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.
         for (var i = 0; i < addon->EnemyCount; i++)
