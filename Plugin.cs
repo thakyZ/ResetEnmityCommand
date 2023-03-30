@@ -72,7 +72,7 @@ namespace ResetEnmityCommand
     /// <param name="a3">Unknown</param>
     /// <param name="a4">Unknown</param>
     /// <returns>Unknown</returns>
-    private delegate long ExecuteCommandDelegate(int id, int a1, int a2, int a3, int a4);
+    private delegate long ExecuteCommandDelegate(uint id, int a1, int a2, int a3, int a4);
 
     /// <summary>
     /// The variable that implements the <see cref="ExecuteCommandDelegate"/> function.
@@ -83,6 +83,15 @@ namespace ResetEnmityCommand
     /// The name of the plugin.
     /// </summary>
     public string Name => "Reset Striking Dummy Enmity";
+
+    /// <summary>
+    /// Dispose the plugin's handler's on unload.
+    /// </summary>
+    public void Dispose()
+    {
+      Dispose(true);
+      GC.SuppressFinalize(this);
+    }
 
     /// <summary>
     /// Safe disposing measures.
@@ -98,6 +107,9 @@ namespace ResetEnmityCommand
       /// Checks if the plugin has been disposed of yet in an extreme circumstance.
       if (!_IsDisposed)
       {
+#if DEBUG
+        ExecuteCommandHook?.Disable();
+#endif
         /// Dispose of the targeted command.
         _ = CommandManager.RemoveHandler("/resetenmity");
         /// Dispose of the global command.
@@ -107,34 +119,21 @@ namespace ResetEnmityCommand
       }
     }
 
-    /// <summary>
-    /// Dispose the plugin's handler's on unload.
-    /// </summary>
-    public void Dispose()
+#if DEBUG
+    private static Hook<ExecuteCommandDelegate>? ExecuteCommandHook { get; set; }
+    private static long ExecuteCommandDetour(uint trigger, int a1, int a2, int a3, int a4)
     {
-      Dispose(true);
-      GC.SuppressFinalize(this);
-#if DEBUG
-      ExecuteCommandHook.Disable();ExecuteCommandHook.Disable();
-#endif
-    }
-
-
-#if DEBUG
-        private static Hook<ExecuteCommandDele> ExecuteCommandHook;
-        private static long ExecuteCommandDetour(uint trigger, int a1, int a2, int a3, int a4)
-        {
-            PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");
-            return ExecuteCommandHook.Original(trigger, a1, a2, a3, a4);
+      PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");
+      return ExecuteCommandHook!.Original(trigger, a1, a2, a3, a4);
     }
 #endif
 
     /// <summary>
     /// The plugin constructor class.
     /// </summary>
-    public unsafe Plugin([RequiredVersion("1.0")]DalamudPluginInterface pluginInterface)
+    public unsafe Plugin([RequiredVersion("1.0")] DalamudPluginInterface pluginInterface, [RequiredVersion("1.0")] SigScanner sigScanner)
     {
-#region Sig Documentation
+      #region Sig Documentation
       /// As of 6.28 and 6.3 the file offset is: ffxiv_dx11.exe+742D70
       //FUN_14073a2f0
       /// void UndefinedFunction_140b105e0 (undefined8 param_1,ushort param_2,undefined param_3,undefined param_4,ushort param_5 )
@@ -167,10 +166,10 @@ namespace ResetEnmityCommand
       ///   FUN_1415aff90(uStack_18 ^ (ulonglong)auStack_f88);
       ///   return;
       /// }
-#endregion
+      #endregion
       /// The signature for the reset enmity at target.
       /// Ask the Dalamud Discord or use a Decompiler like IDA if it is out of date.
-      nint scanText = SigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A");
+      nint scanText = sigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A");
       /// Adds the memory delegate to execute the function at the pointer.
       ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDelegate>(scanText);
       /// Logs the execution of the reset striking dummy enmity command to the debug log.
@@ -179,9 +178,12 @@ namespace ResetEnmityCommand
       _ = CommandManager.AddHandler("/resetenmity", new CommandInfo(ResetTarget) { HelpMessage = "Reset target dummy's enmity." });
       /// Add the reset enmity command for all striking dummies.
       _ = CommandManager.AddHandler("/resetenmityall", new CommandInfo(ResetAll) { HelpMessage = "Reset the enmity of all dummies." });
-    }
+#if DEBUG
+      ExecuteCommandHook = Hook<ExecuteCommandDelegate>.FromAddress(sigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A"), ExecuteCommandDetour);
+      ExecuteCommandHook.Enable();
 #endif
-            
+    }
+
     /// <summary>
     /// The main reset enmity for object function.
     /// Resets the enmity of the provided object ID and logs it to information.
@@ -228,8 +230,8 @@ namespace ResetEnmityCommand
         var addon = (AddonEnemyList*)addonByName;
         /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
         var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
-                    numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()
-        ->AtkModule.AtkArrayDataHolder.NumberArrays[int.Parse(s1.Split()[0])];
+#if DEBUG
+        numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[int.Parse(s1.Split()[0])];
 #endif
 
         /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.
