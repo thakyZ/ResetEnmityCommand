@@ -77,7 +77,6 @@
 
   <Target Name="CleanOutDir" AfterTargets="Build">
     <ItemGroup>
-      <DeleteAssemblies Include="$(TargetDir)*.pdb" />
       <DeleteAssemblies Include="$(TargetDir)$(AssemblyName).deps.json" />
     </ItemGroup>
     <Message Text="Deleting @(DeleteAssemblies)" Importance="high" />

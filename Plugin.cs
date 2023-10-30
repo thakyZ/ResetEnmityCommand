@@ -230,7 +230,10 @@ namespace ResetEnmityCommand
         /// Get the array of enemies to an <see cref="NumberArrayData"/> pointer.
         var numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[21];
 #if DEBUG
-        numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[int.Parse(s1.Split()[0])];
+        if (!string.IsNullOrEmpty(s1))
+        {
+          numArray = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.NumberArrays[int.Parse(s1.Split()[0])];
+        }
 #endif
 
         /// Loop through the array of enemies by the count of enemies from the <see cref="AddonEnemyList"/>.

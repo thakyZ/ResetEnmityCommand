@@ -66,6 +66,8 @@ tab_width = 2
 indent_size = 2
 end_of_line = crlf
 insert_final_newline = false
+vsspell_section_id = 7b053fac4eea4990a1ec81456c922e70
+vsspell_exclusion_expressions_7b053fac4eea4990a1ec81456c922e70 = (?<=Game)(?:Interop)(?=Provider)(?@@PND@@/Options/None)
 
 [*.cs]
 csharp_using_directive_placement = outside_namespace:suggestion
