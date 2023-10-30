@@ -1,27 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 #if DEBUG
 using Dalamud.Hooking;
 #endif
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.UI;
 
-using BattleChara = Dalamud.Game.ClientState.Objects.Types.BattleChara;
 using Character = Dalamud.Game.ClientState.Objects.Types.Character;
 
 namespace ResetEnmityCommand
@@ -32,36 +26,41 @@ namespace ResetEnmityCommand
     /// <summary>
     /// Interface to the Dalamud plugin library.
     /// </summary>
-    [PluginService] public static DalamudPluginInterface DalamudPluginInterface { get; private set; }
+    [PluginService][NotNull, AllowNull] public static DalamudPluginInterface DalamudPluginInterface { get; private set; }
     */
 
     /// <summary>
     /// The Dalamud service's manager to get what the player's target is.
     /// </summary>
-    [PluginService] public static TargetManager TargetManager { get; private set; } = null!;
+    [PluginService][NotNull, AllowNull] public static ITargetManager TargetManager { get; private set; }
 
     /*
     /// <summary>
     /// The Dalamud service's data table to get what objects are in the local vicinity.
     /// </summary>
-    [PluginService] public static ObjectTable ObjectTable { get; private set; }
+    [PluginService][NotNull, AllowNull] public static ObjectTable ObjectTable { get; private set; }
     */
 
     /// <summary>
     /// The Dalamud service's interface class to get the game's GUI interface.
     /// </summary>
-    [PluginService] public static GameGui GameGui { get; private set; } = null!;
+    [PluginService][NotNull, AllowNull] public static IGameGui GameGui { get; private set; }
 
     /// <summary>
     /// The Dalamud service's command manager interface.
     /// Used to add the commands to the plugin interface.
     /// </summary>
-    [PluginService] public static CommandManager CommandManager { get; private set; } = null!;
+    [PluginService][NotNull, AllowNull] public static ICommandManager CommandManager { get; private set; }
 
     /// <summary>
     /// The Dalamud service interface to scan the data in the running process to clear enmity.
     /// </summary>
-    [PluginService] public static SigScanner SigScanner { get; private set; } = null!;
+    [PluginService][NotNull, AllowNull] public static IGameInteropProvider GameInteropProvider { get; private set; }
+
+    /// <summary>
+    /// The Dalamud service interface to scan the data in the running process to clear enmity.
+    /// </summary>
+    [PluginService][NotNull, AllowNull] public static IPluginLog Log { get; private set; }
 
     /// <summary>
     /// The Delegate function to execute the target subcommand to reset enmity of the striking dummy.
@@ -72,7 +71,7 @@ namespace ResetEnmityCommand
     /// <param name="a3">Unknown</param>
     /// <param name="a4">Unknown</param>
     /// <returns>Unknown</returns>
-    private delegate long ExecuteCommandDelegate(uint id, int a1, int a2, int a3, int a4);
+    private delegate long ExecuteCommandDelegate(uint id, uint a1, int a2, int a3, int a4);
 
     /// <summary>
     /// The variable that implements the <see cref="ExecuteCommandDelegate"/> function.
@@ -82,7 +81,7 @@ namespace ResetEnmityCommand
     /// <summary>
     /// The name of the plugin.
     /// </summary>
-    public string Name => "Reset Striking Dummy Enmity";
+    public static string Name => "Reset Striking Dummy Enmity";
 
     /// <summary>
     /// Dispose the plugin's handler's on unload.
@@ -121,9 +120,9 @@ namespace ResetEnmityCommand
 
 #if DEBUG
     private static Hook<ExecuteCommandDelegate>? ExecuteCommandHook { get; set; }
-    private static long ExecuteCommandDetour(uint trigger, int a1, int a2, int a3, int a4)
+    private static long ExecuteCommandDetour(uint trigger, uint a1, int a2, int a3, int a4)
     {
-      PluginLog.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");
+      Log.Debug($"trigger: {trigger}, a1: {a1:X}, a2: {a2:X}, a3: {a3:X}, a4: {a4:X}");
       return ExecuteCommandHook!.Original(trigger, a1, a2, a3, a4);
     }
 #endif
@@ -131,7 +130,7 @@ namespace ResetEnmityCommand
     /// <summary>
     /// The plugin constructor class.
     /// </summary>
-    public unsafe Plugin([RequiredVersion("1.0")] DalamudPluginInterface pluginInterface, [RequiredVersion("1.0")] SigScanner sigScanner)
+    public unsafe Plugin([RequiredVersion("1.0")] ISigScanner sigScanner)
     {
       #region Sig Documentation
       /// As of 6.28 and 6.3 the file offset is: ffxiv_dx11.exe+742D70
@@ -173,13 +172,13 @@ namespace ResetEnmityCommand
       /// Adds the memory delegate to execute the function at the pointer.
       ExecuteCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCommandDelegate>(scanText);
       /// Logs the execution of the reset striking dummy enmity command to the debug log.
-      PluginLog.Debug($"{nameof(ExecuteCommand)} +{scanText - Process.GetCurrentProcess().MainModule!.BaseAddress:X}");
+      Log.Debug($"{nameof(ExecuteCommand)} +{scanText - Process.GetCurrentProcess().MainModule!.BaseAddress:X}");
       /// Add the reset enmity command for the targeted striking dummy.
       _ = CommandManager.AddHandler("/resetenmity", new CommandInfo(ResetTarget) { HelpMessage = "Reset target dummy's enmity." });
       /// Add the reset enmity command for all striking dummies.
       _ = CommandManager.AddHandler("/resetenmityall", new CommandInfo(ResetAll) { HelpMessage = "Reset the enmity of all dummies." });
 #if DEBUG
-      ExecuteCommandHook = Hook<ExecuteCommandDelegate>.FromAddress(sigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A"), ExecuteCommandDetour);
+      ExecuteCommandHook = GameInteropProvider.HookFromAddress<ExecuteCommandDelegate>(sigScanner.ScanText("E8 ?? ?? ?? ?? 8D 43 0A"), ExecuteCommandDetour);
       ExecuteCommandHook.Enable();
 #endif
     }
@@ -189,11 +188,11 @@ namespace ResetEnmityCommand
     /// Resets the enmity of the provided object ID and logs it to information.
     /// </summary>
     /// <param name="objectId">The object to reset the enmity of.</param>
-    private void ResetEnmity(int objectId)
+    private void ResetEnmity(uint objectId)
     {
-      PluginLog.Information($"Resetting enmity {objectId:X}");
+      Log.Information($"Resetting enmity {objectId:X}");
       long success = ExecuteCommand(0x13f, objectId, 0, 0, 0);
-      PluginLog.Debug($"Reset enmity of {objectId:X} returned: {success}");
+      Log.Debug($"Reset enmity of {objectId:X} returned: {success}");
     }
 
     /// <summary>
@@ -210,7 +209,7 @@ namespace ResetEnmityCommand
       if (target is Character { NameId: 541 })
       {
         /// Reset the enmity of the target via it's objectId.
-        ResetEnmity((int)target.ObjectId);
+        ResetEnmity(target.ObjectId);
       }
     }
 
@@ -238,7 +237,7 @@ namespace ResetEnmityCommand
         for (var i = 0; i < addon->EnemyCount; i++)
         {
           /// Get the enemy object ID from the <see cref="NumArrayData"/> as an <see cref="int"/> array with index at <see cref="i"/> multiplied by 6, then offset by plus 8.
-          var enemyObjectId = numArray->IntArray[8 + (i * 6)];
+          var enemyObjectId = (uint)numArray->IntArray[8 + (i * 6)];
 
           /// Get the <see cref="BattleChara"/> from the <see cref="enemyObjectId"/> in the instance.
           var enemyChara = CharacterManager.Instance()->LookupBattleCharaByObjectId(enemyObjectId);

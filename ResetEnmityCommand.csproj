@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>0.0.1.7</Version>
+    <Version>0.0.1.8</Version>
     <Company></Company>
     <Authors>Neko Boi Nick and akira0245</Authors>
     <Description>Add a reset striking dummy enmity command.</Description>
@@ -35,23 +35,23 @@
     <RootNamespace>$(Title.Replace(" ", ""))</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <DebugType>pdbonly</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <Optimize>True</Optimize>
+    <OutputPath>$(ProjectDir)bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
+    <ErrorReport>Prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <AssemblyName>$(MSBuildProjectName)2</AssemblyName>
+    <Optimize>False</Optimize>
+    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</OutputPath>
+    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</BaseOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
+    <ErrorReport>Prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
@@ -64,7 +64,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.10" />
+    <PackageReference Include="DalamudPackager" Version="2.1.12" />
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>False</Private>
@@ -86,12 +86,20 @@
   </Target>
 
   <ItemGroup>
-    <Content Include="ResetEnmityCommand.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
+    <None Remove="$(ProjectDir)bin\**" />
     <Content Include="README.md" CopyToOutputDirectory="Never"/>
     <Content Include=".gitignore" CopyToOutputDirectory="Never"/>
     <EditorConfigFiles Remove=".editorconfig"/>
     <None Include=".editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Content Include="$(ProjectDir)$(MSBuildProjectName).json" CopyToOutputDirectory="Never" />
+    <None Remove="$(ProjectDir)$(MSBuildProjectName)2.json" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <None Remove="$(ProjectDir)$(MSBuildProjectName).json" />
+    <Content Include="$(ProjectDir)$(MSBuildProjectName)2.json" CopyToOutputDirectory="Never" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
 ﻿{
   "Author": "akira0245",
-  "Name": "Reset Enmity Command",
+  "Name": "Reset Enmity Command 2",
   "Punchline": "Add a reset striking dummy enmity command.",
   "Description": "Add a reset striking dummy enmity command.",
-  "InternalName": "ResetEnmityCommand",
+  "InternalName": "ResetEnmityCommand2",
   "RepoUrl": "https://github.com/thakyZ/Dalamud-ResetEnmityCommand",
   "Tags": [
     "akira",
