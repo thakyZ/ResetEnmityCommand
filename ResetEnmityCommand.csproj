@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="Dalamud.Plugin.Bootstrap.targets"/>
+
   <PropertyGroup>
-    <Version>0.0.1.8</Version>
+    <Version>0.0.1.9</Version>
     <Company></Company>
     <Authors>Neko Boi Nick and akira0245</Authors>
     <Description>Add a reset striking dummy enmity command.</Description>
@@ -19,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <Configurations>Release;Debug</Configurations>
     <Nullable>enable</Nullable>
@@ -37,43 +39,26 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
     <Optimize>True</Optimize>
-    <OutputPath>$(ProjectDir)bin\Release\</OutputPath>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>Prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <AssemblyName>$(MSBuildProjectName)2</AssemblyName>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</OutputPath>
-    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</OutputPath>
+    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</BaseOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>Prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsCI)' == 'true'">
-    <Dalamud>$(HOME)/dalamud</Dalamud>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.12" />
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
 
   <Target Name="CleanOutDir" AfterTargets="Build">
     <ItemGroup>
@@ -81,7 +66,7 @@
     </ItemGroup>
     <Message Text="Deleting @(DeleteAssemblies)" Importance="high" />
     <Delete Files="@(DeleteAssemblies)" />
-    <RemoveDir Directories="$(TargetDir)\ref\" />
+    <RemoveDir Directories="$(TargetDir)ref\" />
   </Target>
 
   <ItemGroup>
