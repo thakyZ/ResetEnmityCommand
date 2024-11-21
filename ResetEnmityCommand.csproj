@@ -1,6 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="Dalamud.Plugin.Bootstrap.targets"/>
-
+﻿<Project Sdk="Dalamud.NET.Sdk/11.0.0">
   <PropertyGroup>
     <Version>0.0.1.9</Version>
     <Company></Company>
@@ -48,13 +46,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'PersonalRelease' ">
+    <AssemblyName>$(MSBuildProjectName)2</AssemblyName>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</OutputPath>
+    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</BaseOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>Prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <DebugSymbols>True</DebugSymbols>
     <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</OutputPath>
-    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)</BaseOutputPath>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>Prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
