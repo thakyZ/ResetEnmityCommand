@@ -1,10 +1,10 @@
 ﻿{
-  "Author": "akira0245",
+  "Author": "Neko Boi Nick, akira0245",
   "Name": "Reset Enmity Command",
   "Punchline": "Add a reset striking dummy enmity command.",
   "Description": "Add a reset striking dummy enmity command.",
   "InternalName": "ResetEnmityCommand",
-  "RepoUrl": "https://github.com/thakyZ/Dalamud-ResetEnmityCommand",
+  "RepoUrl": "https://github.com/thakyZ/ResetEnmityCommand",
   "Tags": [
     "akira",
     "striking",
@@ -12,5 +12,5 @@
     "train"
   ],
   "IconUrl": "https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/ResetEnmityCommand/images/icon.png",
-  "Changelog": "Fixed Stack Overflow"
+  "Changelog": "Updated to API 12"
 }
